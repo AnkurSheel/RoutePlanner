@@ -1,0 +1,6 @@
+[submodule "Tools"]
+	path = Tools
+	url = ssh://codinator@codinator.kilnhg.com/Tools/Group/Main
+[submodule "Engine"]
+	path = Engine
+	url = ssh://codinator@codinator.kilnhg.com/Engine/Group/Main
