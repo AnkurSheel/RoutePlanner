@@ -8,10 +8,16 @@
 
 struct WaypointData
 {
-	Base::cString m_Waypoint1;
-	Base::cString m_Waypoint2;
-	int m_Distance;
-	int m_Duration;
+	struct DistanceTimeData
+	{
+		Base::cHashedString m_ToWaypoint;
+		unsigned long m_Distance;
+		unsigned long m_Duration;
+	};
+	typedef std::map<unsigned long, DistanceTimeData> DistanceTimeMap;
+
+	Base::cHashedString m_WaypointName;
+	DistanceTimeMap m_DistanceTimeMap;
 };
 
 typedef std::map<unsigned long, WaypointData> WaypointDataMap;

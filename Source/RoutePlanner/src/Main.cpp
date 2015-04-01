@@ -32,46 +32,46 @@ using namespace std;
 //    -#endif	_DEBUG
 //      -}
 
-void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cString>& waypointNames);
+void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cHashedString>& waypointNames);
+void AddtoWaypointMapData(WaypointDataMap &waypoints, const cHashedString &fromWaypoint, const cHashedString &toWaypoint, const unsigned long distance, const unsigned long duration);
 
 
 //  *******************************************************************************************************************
 int main()
 {
-
 	WaypointDataMap waypoints;
-	std::vector<cString> waypointNames;
+	std::vector<cHashedString> waypointNames;
 	ITimer * pTimer = ITimer::CreateTimer();
 	pTimer->VStartTimer();
 
 	int hour, min, sec;
 
-
-
 	ReadWaypointData(waypoints, waypointNames);
 	pTimer->VStopTimer();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
 	::OutputDebugString(cStringUtilities::MakeFormatted("Time to read in data: %02d:%02d:%02d\n", hour, min, sec).GetData());
 	cGeneticAlgorithm algo(5000, 100, 0.90f, 0.20f, 10000);
+	algo.SetWayPointNames(waypointNames);
 
 	pTimer->VReset();
 	pTimer->VStartTimer();
-	algo.RunGeneticAlgorithmType1(waypoints, waypointNames);
+	algo.RunGeneticAlgorithmType1(waypoints);
 	pTimer->VStopTimer();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
 	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType1: %02d:%02d:%02d\n", hour, min, sec).GetData());
 
 	pTimer->VReset();
 	pTimer->VStartTimer();
-	algo.RunGeneticAlgorithmType2(waypoints, waypointNames);
+	algo.RunGeneticAlgorithmType2(waypoints);
 	pTimer->VStopTimer();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
 	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType2: %02d:%02d:%02d\n", hour, min, sec).GetData());
 
 	pTimer->VReset();
-	algo.RunGeneticAlgorithmType3(waypoints, waypointNames);
-	pTimer->VOnUpdate();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	pTimer->VStartTimer();
+	algo.RunGeneticAlgorithmType3(waypoints);
+	pTimer->VStopTimer();
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
 	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType3: %02d:%02d:%02d\n", hour, min, sec).GetData());
 
 	//_CrtDumpMemoryLeaks()
@@ -82,9 +82,41 @@ int main()
 	return 0;
 }
 
+//  *******************************************************************************************************************
+void AddtoWaypointMapData(WaypointDataMap &waypoints, const cHashedString &fromWaypoint, const cHashedString &toWaypoint, const unsigned long distance, const unsigned long duration)
+{
+	WaypointData data1;
+
+	auto iter = waypoints.find(fromWaypoint.GetHash());
+	if (iter == waypoints.end())
+	{
+		data1.m_WaypointName = cHashedString(fromWaypoint);
+		waypoints.insert(std::pair<unsigned long, WaypointData>(data1.m_WaypointName.GetHash(), data1));
+	}
+	else
+	{
+		data1 = iter->second;
+	}
+
+	WaypointData::DistanceTimeData dtData;
+	auto iter1= data1.m_DistanceTimeMap.find(toWaypoint.GetHash());
+	SP_ASSERT_ERROR(iter1 == data1.m_DistanceTimeMap.end())(data1.m_WaypointName.GetString())(toWaypoint.GetString()).SetCustomMessage("Duplicate Entry Found for Distance Time Map");
+	if (iter1 == data1.m_DistanceTimeMap.end())
+	{
+		dtData.m_ToWaypoint = toWaypoint;
+		dtData.m_Distance = distance;
+		dtData.m_Duration = duration;
+		data1.m_DistanceTimeMap.insert(std::pair<unsigned long, WaypointData::DistanceTimeData>(dtData.m_ToWaypoint.GetHash(), dtData));
+	}
+	else
+	{
+		int a = 5;
+	}
+	waypoints[data1.m_WaypointName.GetHash()] = data1;
+}
 
 //  *******************************************************************************************************************
-void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cString>& waypointNames)
+void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cHashedString>& waypointNames)
 {
 	IFileIO* m_pFile = IFileIO::CreateFileIO();
 	if(m_pFile->VOpenFile("my-waypoints-dist-dur.csv", std::ios_base::in))
@@ -92,7 +124,6 @@ void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cString>& waypoint
 		m_pFile->VReadLine(); // disregard 1st line
 
 		std::vector<cString> tokens;
-		WaypointData data1;
 		WaypointData data2;
 		cString m_Buffer = m_pFile->VReadLine();
 
@@ -100,23 +131,20 @@ void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cString>& waypoint
 		{
 			tokens.clear();
 			m_Buffer.Tokenize("\t", tokens);
-			data1.m_Waypoint1 = tokens[0];
-			data1.m_Waypoint2 = tokens[1];
-			data1.m_Distance = tokens[2].ToInt().GetValue();
-			data1.m_Duration = tokens[3].ToInt().GetValue();
 
-			data2.m_Waypoint1 = tokens[1];
-			data2.m_Waypoint2 = tokens[0];
-			data2.m_Distance = tokens[2].ToInt().GetValue();
-			data2.m_Duration = tokens[3].ToInt().GetValue();
+			cHashedString waypointName1(tokens[0]);
+			cHashedString waypointName2(tokens[1]);
+			unsigned long distance = tokens[2].ToInt().GetValue();
+			unsigned long duration = tokens[3].ToInt().GetValue();
 
-			waypoints.insert(std::pair<unsigned long, WaypointData>(cHashedString::CalculateChecksum(data1.m_Waypoint1 + data1.m_Waypoint2), data1));
-			waypoints.insert(std::pair<unsigned long, WaypointData>(cHashedString::CalculateChecksum(data2.m_Waypoint1 + data2.m_Waypoint2), data2));
+			AddtoWaypointMapData(waypoints, waypointName1, waypointName2, distance, duration);
+			AddtoWaypointMapData(waypoints, waypointName2, waypointName1, distance, duration);
 
 			m_Buffer = m_pFile->VReadLine();
-			if (find(waypointNames.begin(), waypointNames.end(), tokens[0]) == waypointNames.end())
+			cHashedString name = cHashedString(tokens[0]);
+			if (find(waypointNames.begin(), waypointNames.end(), name) == waypointNames.end())
 			{
-				waypointNames.push_back(tokens[0]);
+				waypointNames.push_back(name);
 			}
 
 		}

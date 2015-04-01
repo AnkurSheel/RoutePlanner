@@ -36,6 +36,7 @@ cGeneticAlgorithm::cGeneticAlgorithm(int generations/*=5000*/, int populationSiz
 	{
 		m_pRandomGenerator->VSetRandomSeed(seed);
 	}
+	m_Population.reserve(m_PopulationSize);
 }
 
 //	*******************************************************************************************************************
@@ -45,14 +46,14 @@ cGeneticAlgorithm::~cGeneticAlgorithm()
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames)
+void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList)
 {
 	m_Population.clear();
-	CreateRandomPopulation(waypointNames);
+	CreateRandomPopulation();
 
 	GenomeList newPopulation;
+	newPopulation.reserve(m_PopulationSize);
 	stGenome father;
-	stGenome mother;
 
 	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
 	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
@@ -68,8 +69,13 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList
 			PrintCurrentPopulation(generation);
 			GenerateHtml("RouteType1");
 		}
+		for (int i=0; i < parentsToUse; i++)
+		{
+			AddGenome(newPopulation, m_Population[i]);
+		}
 		int populationIndex = 0;
-		for (int i = parentsToUse + 1; i < m_PopulationSize; i++)
+
+		for (int i = parentsToUse; i < m_PopulationSize; i++)
 		{
 			father = m_Population[populationIndex++];
 
@@ -79,21 +85,20 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList
 			}
 			ShuffleMutation(father);
 			Mutate(father);
-			SetGenomeHash(father);
-			ReplaceGenome(i, father);
+			AddGenome(newPopulation, father);
 		}
+		m_Population.swap(newPopulation);
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
 	GenerateHtml("RouteType1");
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames)
+void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList)
 {
 	m_Population.clear();
-	CreateRandomPopulation(waypointNames);
+	CreateRandomPopulation();
 
-	GenomeList newPopulation;
 	stGenome father;
 	stGenome mother;
 
@@ -105,7 +110,6 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList
 		CalculateFitness(dataList);
 
 		std::sort(m_Population.begin(), m_Population.end());
-		newPopulation.clear();
 		if (generation % 100 == 0 || generation==1)
 		{
 			PrintCurrentPopulation(generation);
@@ -131,10 +135,10 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames)
+void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList)
 {
 	m_Population.clear();
-	CreateRandomPopulation(waypointNames);
+	CreateRandomPopulation();
 
 	GenomeList newPopulation;
 	stGenome father;
@@ -162,7 +166,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList
 		}
 		for (int i = parentsToUse; i < m_PopulationSize; i++)
 		{
-			father = SelectFromPopulation();
+			father = SelectFromPopulation(m_Population.size());
 			ShuffleMutation(father);
 			Mutate(father);
 			SetGenomeHash(father);
@@ -176,18 +180,19 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames)
+void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList)
 {
-	CreateRandomPopulation(waypointNames);
+	CreateRandomPopulation();
 
 	GenomeList newPopulation;
+	newPopulation.reserve(m_PopulationSize);
 	stGenome father;
 	stGenome mother;
 
 	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
 	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
 	{
-		cout << "Type1 Generation " << generation;
+		//cout << "Type1 Generation " << generation;
 		m_TotalFitnessOfPopulation = 0.0f;
 		CalculateFitness(dataList);
 
@@ -229,20 +234,29 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList
 			//	newPopulation.push_back(temp1);
 			//}
 		}
-		m_Population = newPopulation;
+		m_Population.swap(newPopulation);
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
 	GenerateHtml("RouteType4");
 }
 
+//  *******************************************************************************************************************
+void cGeneticAlgorithm::SetWayPointNames(const vector<Base::cHashedString>& waypointNames)
+{
+	for (int i = 0; i < waypointNames.size(); i++ )
+	{
+		m_WaypointNames[waypointNames[i].GetHash()] = waypointNames[i];
+	}
+}
+
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::CreateRandomPopulation(const vector<cString>& dataList)
+void cGeneticAlgorithm::CreateRandomPopulation()
 {
 	GenomeDataList shuffledList;
 	std::srand(m_Seed);
-	for (int i= 0; i< dataList.size(); i++)
+	for (auto iter = m_WaypointNames.begin(); iter != m_WaypointNames.end(); iter++)
 	{
-		shuffledList.push_back(cHashedString(dataList[i]));
+		shuffledList.push_back(iter->first);
 	}
 	stGenome genome;
 	while(m_Population.size() < m_PopulationSize)
@@ -261,26 +275,26 @@ void cGeneticAlgorithm::CalculateFitness(const WaypointDataMap& dataList)
 		stGenome& genome = (*iterPopulation);
 		genome.m_Fitness = 0.0f;
 		auto iter = genome.m_Data.begin();
-		cHashedString waypoint1 = (*iter);
-		cHashedString waypoint2;
+		DataType waypoint1 = (*iter);
+		DataType waypoint2;
 		iter++;
 		for (;iter != genome.m_Data.end(); iter++)
 		{
 			waypoint2 = (*iter);
-			unsigned long hash = cHashedString::CalculateChecksum(waypoint1.GetString() + waypoint2.GetString());
-			genome.m_Fitness += dataList.at(hash).m_Distance/1000.0f;
+			unsigned long distance = dataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
+			genome.m_Fitness += distance;
 			waypoint1 = waypoint2;
 		}
 		waypoint2 = genome.m_Data[0];
-		unsigned long hash = cHashedString::CalculateChecksum(waypoint1.GetString() + waypoint2.GetString());
-		genome.m_Fitness += dataList.at(hash).m_Distance/1000.0f;
+		unsigned long distance = dataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
+		genome.m_Fitness += distance;
 
 		m_TotalFitnessOfPopulation += genome.m_Fitness;
 	}
 }
 
 //	*******************************************************************************************************************
-stGenome& cGeneticAlgorithm::SelectFromPopulation()
+stGenome& cGeneticAlgorithm::SelectFromPopulation(const int size)
 {
 	//float ball = m_pRandomGenerator->VRandom() * m_TotalFitnessOfPopulation;
 	//float pie = 0.0f;
@@ -292,7 +306,7 @@ stGenome& cGeneticAlgorithm::SelectFromPopulation()
 	//		return (*iter);
 	//	}
 	//}
-	int index = m_pRandomGenerator->VRandom(m_Population.size());
+	int index = m_pRandomGenerator->VRandom(size);
 	return m_Population[index];
 }
 
@@ -332,7 +346,7 @@ void cGeneticAlgorithm::ShuffleMutation(stGenome& genome)
 		insertIndex = m_pRandomGenerator->VRandom(genome.m_Data.size() - length - 1);
 	}
 	while (startIndex == insertIndex);
-	cHashedString temp;
+	DataType temp;
 	for (int i = 0; i < length; i++)
 	{
 		temp = genome.m_Data[startIndex + i];
@@ -377,7 +391,7 @@ void cGeneticAlgorithm::Mutate(stGenome& genome, int maxMutations /*= 3*/)
 		}
 		while (swap_index1 == swap_index2);
 
-		cHashedString temp = genome.m_Data[swap_index1];
+		DataType temp = genome.m_Data[swap_index1];
 		genome.m_Data[swap_index1] = genome.m_Data[swap_index2];
 		genome.m_Data[swap_index2] = temp;
 	}
@@ -386,7 +400,7 @@ void cGeneticAlgorithm::Mutate(stGenome& genome, int maxMutations /*= 3*/)
 void cGeneticAlgorithm::PrintCurrentPopulation(int currentGeneration)
 {
 	//cString message = cStringUtilities::MakeFormatted("\n\nGeneration: %d, best: %0.3f, population size %d\n", currentGeneration, m_Population[0].m_Fitness, m_Population.size()); 
-	cString message = cStringUtilities::MakeFormatted("Generation: %d, best: %0.3f, population size %d\n", currentGeneration, m_Population[0].m_Fitness, m_Population.size()); 
+	cString message = cStringUtilities::MakeFormatted("Generation: %d, best: %0.3f, population size %d\n", currentGeneration, (m_Population[0].m_Fitness/1000.0f), m_Population.size()); 
 	/*for (int i = 0;	 i < m_Population[0].m_Data.size(); i++)
 	{
 		message += m_Population[0].m_Data[i] + ", ";
@@ -398,19 +412,19 @@ void cGeneticAlgorithm::PrintCurrentPopulation(int currentGeneration)
 //	*******************************************************************************************************************
 bool cGeneticAlgorithm::ValidateGenome(const GenomeList& population, const stGenome& genome, int size)
 {
-	auto iter = genome.m_Data.begin();
-	cHashedString waypoint1 = (*iter);
-	cHashedString waypoint2;
-	iter++;
-	for (;iter != genome.m_Data.end(); iter++)
-	{
-		waypoint2 = (*iter);
-		if (waypoint1 == waypoint2)
-		{
-			return false;
-		}
-		waypoint1 = waypoint2;
-	}
+	//auto iter = genome.m_Data.begin();
+	//DataType waypoint1 = (*iter);
+	//DataType waypoint2;
+	//iter++;
+	//for (;iter != genome.m_Data.end(); iter++)
+	//{
+	//	waypoint2 = (*iter);
+	//	if (waypoint1 == waypoint2)
+	//	{
+	//		return false;
+	//	}
+	//	waypoint1 = waypoint2;
+	//}
 
 	for (int i = 0; i < size; i++)
 	{
@@ -491,7 +505,7 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		int directionIndex = 1;
 		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + googleWaypointsAllowed)
 		{
-			cString route = "\t\t\t\t\tcase \"" + data[startIndex].GetString() + "\":\n";
+			cString route = "\t\t\t\t\tcase \"" + m_WaypointNames[data[startIndex]].GetString() + "\":\n";
 			route += cStringUtilities::MakeFormatted("\t\t\t\t\t\tdirectionsDisplay%d= new google.maps.DirectionsRenderer(directionsDisplayOptions);\n", directionIndex);
 			route += "\t\t\t\t\t\tbreak;\n";
 			pFile->VWriteLine(route);
@@ -530,7 +544,7 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		directionIndex = 1;
 		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + googleWaypointsAllowed)
 		{
-			cString route = "\t\t\t\t\t\t\tcase \"" + data[startIndex].GetString() + "\":\n";
+			cString route = "\t\t\t\t\t\t\tcase \"" + m_WaypointNames[data[startIndex]].GetString() + "\":\n";
 			route += cStringUtilities::MakeFormatted("\t\t\t\t\t\t\t\tdirectionsDisplay%d.setDirections(response);\n", directionIndex);
 			route += "\t\t\t\t\t\t\t\tbreak;\n";
 			pFile->VWriteLine(route);
@@ -550,11 +564,11 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 			{
 				endIndex = data.size() - 1;
 			}
-			cString route = "\t\t\tcalcRoute(\"" + data[startIndex].GetString() + "\", \"" + data[endIndex].GetString() + "\", [";
+			cString route = "\t\t\tcalcRoute(\"" + m_WaypointNames[data[startIndex]].GetString() + "\", \"" + m_WaypointNames[data[endIndex]].GetString() + "\", [";
 			startIndex++;
 			for (; startIndex < endIndex; startIndex++)
 			{
-				route += "\"" + data[startIndex].GetString() + "\"";
+				route += "\"" + m_WaypointNames[data[startIndex]].GetString() + "\"";
 				if (startIndex < (endIndex - 1))
 				{
 					route += ", ";
@@ -596,7 +610,7 @@ void cGeneticAlgorithm::SetGenomeHash(stGenome &genome)
 	cString str;
 	for (int i = 0; i < genome.m_Data.size(); i++)
 	{
-		str += genome.m_Data[i].GetString();
+		str += cStringUtilities::MakeFormatted("%d", genome.m_Data[i]);
 	}
 	genome.hash = cHashedString::CalculateChecksum(str);
 }

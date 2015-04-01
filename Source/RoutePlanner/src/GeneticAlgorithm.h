@@ -13,11 +13,11 @@ namespace Utilities
 	class IRandomGenerator;
 }
 
-typedef std::vector<Base::cHashedString> GenomeDataList;
-
+typedef unsigned long DataType;
+typedef std::vector<DataType> GenomeDataList;
 struct stGenome
 {
-	std::vector<Base::cHashedString> m_Data;
+	std::vector<DataType> m_Data;
 	float m_Fitness;
 	unsigned long hash;
 	stGenome();
@@ -35,16 +35,17 @@ class cGeneticAlgorithm
 public:
 	cGeneticAlgorithm(int generations=5000, int populationSize=100, float crossOverRate=0.5f, float mutationRate=0.02f, unsigned int seed = 0);
 	~cGeneticAlgorithm();
-	void RunGeneticAlgorithmType1(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames);
-	void RunGeneticAlgorithmType2(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames);
-	void RunGeneticAlgorithmType3(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames);
-	void RunGeneticAlgorithmType4(const WaypointDataMap& dataList, std::vector<Base::cString>& waypointNames);
+	void RunGeneticAlgorithmType1(const WaypointDataMap& dataList);
+	void RunGeneticAlgorithmType2(const WaypointDataMap& dataList);
+	void RunGeneticAlgorithmType3(const WaypointDataMap& dataList);
+	void RunGeneticAlgorithmType4(const WaypointDataMap& dataList);
+	void SetWayPointNames(const std::vector<Base::cHashedString>& waypointNames);
 	void SetSeed(unsigned int seed) { m_Seed = seed; }
 
 private:
-	void CreateRandomPopulation(const std::vector<Base::cString>& dataList);
+	void CreateRandomPopulation();
 	void CalculateFitness(const WaypointDataMap& dataList);
-	stGenome& SelectFromPopulation();
+	stGenome& SelectFromPopulation(const int size);
 	void CrossOver(stGenome& father, stGenome& mother);
 	void ShuffleMutation(stGenome& genome);
 	void Mutate(stGenome& genome, int maxMutations = 3);
@@ -64,43 +65,7 @@ private:
 	Utilities::IRandomGenerator * m_pRandomGenerator;
 	GenomeList m_Population;
 	unsigned int m_Seed;
+	std::map<unsigned long, Base::cHashedString> m_WaypointNames;
 };
 
 #endif // GENETICALGORITHM_H__
-
-//class cGenetic
-//{
-//protected:
-//	UINT			m_iTarget,
-//		m_iRowSize,
-//		m_iColSize,
-//		m_iGenomeLength,
-//		m_iPopSize,
-//		m_iMaxGenerations ;
-//	const float		m_iCrossoverRate,
-//		m_iMutationRate ;
-//	vector<Genome>	m_Population ;
-//	BOOL			m_bSolutionFound ;
-//	Genome			m_Solution ;
-//	int				m_iFoundinGenNo ;
-//
-//public:
-//	cGenetic() ;
-//	~cGenetic() ;
-//	UINT GetTarget() ;
-//	UINT GetPopSize() ;
-//	float GetCrossOverRate() ;
-//	float GetMutationRate() ;
-//	void SetRandSeed() ;
-//	void CreateRandomPopulation() ;
-//	void FindSolution() ;
-//	void CalculateFitness() ;
-//	vector<int> ParseGenes(Genome genome) ;
-//	int ConvertBinaryStringtoNo(string szBinary) ;
-//	int CalculateRowTotal(vector<int> values) ;
-//	int CalculateColTotal(vector<int> values) ;
-//	Genome Selection() ;
-//	void CrossOver(Genome &Father, Genome &Mother) ;
-//	void Mutate(Genome &gene) ;
-//	void PrintSolution() ;
-//};
