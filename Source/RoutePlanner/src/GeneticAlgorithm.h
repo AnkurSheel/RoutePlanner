@@ -13,9 +13,11 @@ namespace Utilities
 	class IRandomGenerator;
 }
 
+typedef std::vector<Base::cHashedString> GenomeDataList;
+
 struct stGenome
 {
-	std::vector<Base::cString> m_Data;
+	std::vector<Base::cHashedString> m_Data;
 	float m_Fitness;
 	unsigned long hash;
 	stGenome();

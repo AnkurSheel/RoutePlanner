@@ -1,3 +1,5 @@
+// http://nbviewer.ipython.org/github/rhiever/Data-Analysis-and-Machine-Learning-Projects/blob/master/optimal-road-trip/Computing%20the%20optimal%20road%20trip%20across%20the%20U.S..ipynb
+
 #include "stdafx.h"
 #include "GeneticAlgorithm.h"
 #include <ctime>
@@ -82,6 +84,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList
 		}
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
+	GenerateHtml("RouteType1");
 }
 
 //	*******************************************************************************************************************
@@ -124,6 +127,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList
 		}
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
+	GenerateHtml("RouteType2");
 }
 
 //	*******************************************************************************************************************
@@ -168,6 +172,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList
 		m_Population.insert(m_Population.end(), newPopulation.begin(), newPopulation.end());
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
+	GenerateHtml("RouteType3");
 }
 
 //	*******************************************************************************************************************
@@ -227,14 +232,18 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList
 		m_Population = newPopulation;
 	}
 	PrintCurrentPopulation(m_NumberOfGenerations);
+	GenerateHtml("RouteType4");
 }
 
 //	*******************************************************************************************************************
 void cGeneticAlgorithm::CreateRandomPopulation(const vector<cString>& dataList)
 {
-	std::srand(unsigned(std::time(0)));
-	std::vector<cString> shuffledList = dataList;
- 
+	GenomeDataList shuffledList;
+	std::srand(m_Seed);
+	for (int i= 0; i< dataList.size(); i++)
+	{
+		shuffledList.push_back(cHashedString(dataList[i]));
+	}
 	stGenome genome;
 	while(m_Population.size() < m_PopulationSize)
 	{
@@ -252,18 +261,18 @@ void cGeneticAlgorithm::CalculateFitness(const WaypointDataMap& dataList)
 		stGenome& genome = (*iterPopulation);
 		genome.m_Fitness = 0.0f;
 		auto iter = genome.m_Data.begin();
-		cString waypoint1 = (*iter);
-		cString waypoint2;
+		cHashedString waypoint1 = (*iter);
+		cHashedString waypoint2;
 		iter++;
 		for (;iter != genome.m_Data.end(); iter++)
 		{
 			waypoint2 = (*iter);
-			unsigned long hash = cHashedString::CalculateChecksum(waypoint1 + waypoint2);
+			unsigned long hash = cHashedString::CalculateChecksum(waypoint1.GetString() + waypoint2.GetString());
 			genome.m_Fitness += dataList.at(hash).m_Distance/1000.0f;
 			waypoint1 = waypoint2;
 		}
 		waypoint2 = genome.m_Data[0];
-		unsigned long hash = cHashedString::CalculateChecksum(waypoint1 + waypoint2);
+		unsigned long hash = cHashedString::CalculateChecksum(waypoint1.GetString() + waypoint2.GetString());
 		genome.m_Fitness += dataList.at(hash).m_Distance/1000.0f;
 
 		m_TotalFitnessOfPopulation += genome.m_Fitness;
@@ -273,18 +282,18 @@ void cGeneticAlgorithm::CalculateFitness(const WaypointDataMap& dataList)
 //	*******************************************************************************************************************
 stGenome& cGeneticAlgorithm::SelectFromPopulation()
 {
-	float ball = m_pRandomGenerator->VRandom() * m_TotalFitnessOfPopulation;
-	float pie = 0.0f;
-	for(auto iter = m_Population.begin(); iter != m_Population.end(); iter++)
-	{
-		pie += iter->m_Fitness;
-		if(ball < pie)
-		{
-			return (*iter);
-		}
-	}
-	//int index = m_pRandomGenerator->VRandom(m_Population.size());
-	//return m_Population[index];
+	//float ball = m_pRandomGenerator->VRandom() * m_TotalFitnessOfPopulation;
+	//float pie = 0.0f;
+	//for(auto iter = m_Population.begin(); iter != m_Population.end(); iter++)
+	//{
+	//	pie += iter->m_Fitness;
+	//	if(ball < pie)
+	//	{
+	//		return (*iter);
+	//	}
+	//}
+	int index = m_pRandomGenerator->VRandom(m_Population.size());
+	return m_Population[index];
 }
 
 void cGeneticAlgorithm::CrossOver(stGenome& father, stGenome& mother)
@@ -323,7 +332,7 @@ void cGeneticAlgorithm::ShuffleMutation(stGenome& genome)
 		insertIndex = m_pRandomGenerator->VRandom(genome.m_Data.size() - length - 1);
 	}
 	while (startIndex == insertIndex);
-	cString temp;
+	cHashedString temp;
 	for (int i = 0; i < length; i++)
 	{
 		temp = genome.m_Data[startIndex + i];
@@ -368,7 +377,7 @@ void cGeneticAlgorithm::Mutate(stGenome& genome, int maxMutations /*= 3*/)
 		}
 		while (swap_index1 == swap_index2);
 
-		cString temp = genome.m_Data[swap_index1];
+		cHashedString temp = genome.m_Data[swap_index1];
 		genome.m_Data[swap_index1] = genome.m_Data[swap_index2];
 		genome.m_Data[swap_index2] = temp;
 	}
@@ -390,8 +399,8 @@ void cGeneticAlgorithm::PrintCurrentPopulation(int currentGeneration)
 bool cGeneticAlgorithm::ValidateGenome(const GenomeList& population, const stGenome& genome, int size)
 {
 	auto iter = genome.m_Data.begin();
-	cString waypoint1 = (*iter);
-	cString waypoint2;
+	cHashedString waypoint1 = (*iter);
+	cHashedString waypoint2;
 	iter++;
 	for (;iter != genome.m_Data.end(); iter++)
 	{
@@ -417,7 +426,7 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 {
 	static int htmlIndex = 0;
 	IFileIO * pFile = IFileIO::CreateFileIO();
-	vector<cString> data = m_Population[0].m_Data;
+	GenomeDataList data = m_Population[0].m_Data;
 	data.push_back(data[0]);
 
 	if(pFile->VOpenFile(cStringUtilities::MakeFormatted("Routes/%s_%d.html", fileNamePrefix.GetData(), htmlIndex), ios_base::out))
@@ -451,7 +460,8 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		pFile->VWriteLine("\t\t<script src=\"https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true\"></script>\n");
 		pFile->VWriteLine("\t\t<script>\n");
 
-		int numberOfDirectionVariables = static_cast<int>(ceil(data.size() / 9.0f));
+		const int googleWaypointsAllowed  = 8;
+		int numberOfDirectionVariables = static_cast<int>(ceil(data.size() / static_cast<float>(googleWaypointsAllowed)));
 		for (int directionIndex = 1; directionIndex <= numberOfDirectionVariables; directionIndex++)
 		{
 			pFile->VWriteLine(cStringUtilities::MakeFormatted("\t\t\tvar directionsDisplay%d\n", directionIndex));
@@ -479,9 +489,9 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		pFile->VWriteLine("\t\t\tfunction calcRoute(start, end, routes) {\n");
 		pFile->VWriteLine("\t\t\t\tswitch (start) {\n");
 		int directionIndex = 1;
-		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + 8)
+		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + googleWaypointsAllowed)
 		{
-			cString route = "\t\t\t\t\tcase \"" + data[startIndex] + "\":\n";
+			cString route = "\t\t\t\t\tcase \"" + data[startIndex].GetString() + "\":\n";
 			route += cStringUtilities::MakeFormatted("\t\t\t\t\t\tdirectionsDisplay%d= new google.maps.DirectionsRenderer(directionsDisplayOptions);\n", directionIndex);
 			route += "\t\t\t\t\t\tbreak;\n";
 			pFile->VWriteLine(route);
@@ -495,24 +505,32 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		pFile->VWriteLine("\t\t\t\t\t\tlocation:routes[i],\n");
 		pFile->VWriteLine("\t\t\t\t\t\tstopover:true});\n");
 		pFile->VWriteLine("\t\t\t\t\}\n");
-		
 		pFile->VWriteLine("\n");
-
-		pFile->VWriteLine("\t\t\t\tvar request = {\n");
-		pFile->VWriteLine("\t\t\t\t\torigin: start,\n");
-		pFile->VWriteLine("\t\t\t\t\tdestination: end,\n");
-		pFile->VWriteLine("\t\t\t\t\twaypoints: waypts,\n");
-		pFile->VWriteLine("\t\t\t\t\toptimizeWaypoints: false,\n");
-		pFile->VWriteLine("\t\t\t\t\ttravelMode: google.maps.TravelMode.DRIVING\n");
-		pFile->VWriteLine("\t\t\t\t};\n");
+		pFile->VWriteLine("\t\t\t\tvar request = \"\";\n");
+		pFile->VWriteLine("\t\t\t\tif (waypts.length > 0) {\n");
+		pFile->VWriteLine("\t\t\t\t\trequest = {\n");
+		pFile->VWriteLine("\t\t\t\t\t\torigin: start,\n");
+		pFile->VWriteLine("\t\t\t\t\t\tdestination: end,\n");
+		pFile->VWriteLine("\t\t\t\t\t\twaypoints: waypts,\n");
+		pFile->VWriteLine("\t\t\t\t\t\toptimizeWaypoints: false,\n");
+		pFile->VWriteLine("\t\t\t\t\t\ttravelMode: google.maps.TravelMode.DRIVING\n");
+		pFile->VWriteLine("\t\t\t\t\t};\n");
+		pFile->VWriteLine("\t\t\t\t}\n");
+		pFile->VWriteLine("\t\t\t\telse {\n");
+		pFile->VWriteLine("\t\t\t\t\trequest = {\n");
+		pFile->VWriteLine("\t\t\t\t\t\torigin: start,\n");
+		pFile->VWriteLine("\t\t\t\t\t\tdestination: end,\n");
+		pFile->VWriteLine("\t\t\t\t\t\ttravelMode: google.maps.TravelMode.DRIVING\n");
+		pFile->VWriteLine("\t\t\t\t\t};\n");
+		pFile->VWriteLine("\t\t\t\t}\n");
 		pFile->VWriteLine("\t\t\t\tdirectionsService.route(request, function(response, status) {\n");
 		pFile->VWriteLine("\t\t\t\t\tif (status == google.maps.DirectionsStatus.OK) {\n");
 		pFile->VWriteLine("\t\t\t\t\t\tswitch (start) {\n");
 		
 		directionIndex = 1;
-		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + 8)
+		for (int startIndex = 0; startIndex < data.size(); startIndex= startIndex + googleWaypointsAllowed)
 		{
-			cString route = "\t\t\t\t\t\t\tcase \"" + data[startIndex] + "\":\n";
+			cString route = "\t\t\t\t\t\t\tcase \"" + data[startIndex].GetString() + "\":\n";
 			route += cStringUtilities::MakeFormatted("\t\t\t\t\t\t\t\tdirectionsDisplay%d.setDirections(response);\n", directionIndex);
 			route += "\t\t\t\t\t\t\t\tbreak;\n";
 			pFile->VWriteLine(route);
@@ -527,37 +545,23 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		while (waypointIndex < data.size())
 		{
 			int startIndex = waypointIndex;
-			int endIndex = startIndex + 8;
+			int endIndex = startIndex + googleWaypointsAllowed;
 			if(endIndex >= data.size())
 			{
 				endIndex = data.size() - 1;
 			}
-			cString route = "\t\t\tcalcRoute(\"" + data[startIndex] + "\", \"" + data[endIndex];
+			cString route = "\t\t\tcalcRoute(\"" + data[startIndex].GetString() + "\", \"" + data[endIndex].GetString() + "\", [";
 			startIndex++;
-			bool hasWaypoints = false;
-			if (startIndex < (endIndex - 1))
-			{
-				hasWaypoints = true;
-				route	 += "\", [";
-			}
 			for (; startIndex < endIndex; startIndex++)
 			{
-				route += "\"" + data[startIndex] + "\"";
+				route += "\"" + data[startIndex].GetString() + "\"";
 				if (startIndex < (endIndex - 1))
 				{
 					route += ", ";
 				}
 			}
-			if(hasWaypoints)
-			{
-				route += "]";
-			}
-			else
-			{
-				route += "\"";
-			}
-			route += ");\n";
-			waypointIndex += 8;
+			route += "]);\n";
+			waypointIndex += googleWaypointsAllowed;
 			pFile->VWriteLine(route);
 		}
 		pFile->VWriteLine("\t\t</script>\n");
@@ -592,7 +596,7 @@ void cGeneticAlgorithm::SetGenomeHash(stGenome &genome)
 	cString str;
 	for (int i = 0; i < genome.m_Data.size(); i++)
 	{
-		str += genome.m_Data[i];
+		str += genome.m_Data[i].GetString();
 	}
 	genome.hash = cHashedString::CalculateChecksum(str);
 }

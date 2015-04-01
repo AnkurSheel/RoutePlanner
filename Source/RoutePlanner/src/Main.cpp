@@ -8,9 +8,12 @@
 #include "Logger.hxx"
 #include "SpAssertSettings.hxx"
 #include "conio.h"
+#include "Timer.hxx"
+#include "iostream"
 
 using namespace Base;
 using namespace Utilities;
+using namespace std;
 
 //// ***************************************************************
 //-// Checks for memory leaks
@@ -35,16 +38,45 @@ void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cString>& waypoint
 //  *******************************************************************************************************************
 int main()
 {
+
 	WaypointDataMap waypoints;
 	std::vector<cString> waypointNames;
+	ITimer * pTimer = ITimer::CreateTimer();
+	pTimer->VStartTimer();
+
+	int hour, min, sec;
+
+
 
 	ReadWaypointData(waypoints, waypointNames);
+	pTimer->VStopTimer();
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	::OutputDebugString(cStringUtilities::MakeFormatted("Time to read in data: %02d:%02d:%02d\n", hour, min, sec).GetData());
 	cGeneticAlgorithm algo(5000, 100, 0.90f, 0.20f, 10000);
+
+	pTimer->VReset();
+	pTimer->VStartTimer();
 	algo.RunGeneticAlgorithmType1(waypoints, waypointNames);
+	pTimer->VStopTimer();
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType1: %02d:%02d:%02d\n", hour, min, sec).GetData());
+
+	pTimer->VReset();
+	pTimer->VStartTimer();
 	algo.RunGeneticAlgorithmType2(waypoints, waypointNames);
+	pTimer->VStopTimer();
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType2: %02d:%02d:%02d\n", hour, min, sec).GetData());
+
+	pTimer->VReset();
 	algo.RunGeneticAlgorithmType3(waypoints, waypointNames);
+	pTimer->VOnUpdate();
+	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);;
+	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType3: %02d:%02d:%02d\n", hour, min, sec).GetData());
+
 	//_CrtDumpMemoryLeaks()
 
+	SafeDelete(&pTimer);
 	cServiceLocator::Destroy();
 	getch();
 	return 0;
