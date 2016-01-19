@@ -1,0 +1,44 @@
+// ***************************************************************
+//  Colors.ps   version:  1.0   Ankur Sheel  date: 2012/08/31
+//  -------------------------------------------------------------
+//  
+//  -------------------------------------------------------------
+//  Copyright (C) 2008 - All Rights Reserved
+// ***************************************************************
+// 
+// ***************************************************************
+
+/////////////
+// GLOBALS //
+/////////////
+Texture2D shaderTexture;
+SamplerState SampleType;
+
+cbuffer cbPerObject
+{
+    float4 diffuseColor;
+    bool hasTexture;
+};
+
+//////////////
+// TYPEDEFS //
+//////////////
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
+float4 main(PixelInputType input) : SV_TARGET
+{
+   float4 textureColor = diffuseColor;
+
+    if(true == hasTexture)
+    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
+		textureColor = shaderTexture.Sample(SampleType, input.tex);
+
+    return textureColor;
+}

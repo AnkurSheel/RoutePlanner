@@ -1,0 +1,26 @@
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/BaseControl.hxx:48: warning: return type of member Graphics::IBaseControl::VPostMsg is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:37: warning: expected whitespace after param command
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:37: warning: argument 'int' of command @param is not found in the argument list of Graphics::IKeyboardHandler::VOnCharPress(const unsigned int iCharID)
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:37: warning: The following parameters of Graphics::IKeyboardHandler::VOnCharPress(const unsigned int iCharID) are not documented:
+  parameter 'iCharID'
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:37: warning: return type of member Graphics::IKeyboardHandler::VOnCharPress is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:25: warning: expected whitespace after param command
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:25: warning: argument 'int' of command @param is not found in the argument list of Graphics::IKeyboardHandler::VOnKeyDown(const unsigned int iCharID)
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:25: warning: The following parameters of Graphics::IKeyboardHandler::VOnKeyDown(const unsigned int iCharID) are not documented:
+  parameter 'iCharID'
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:25: warning: return type of member Graphics::IKeyboardHandler::VOnKeyDown is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:31: warning: expected whitespace after param command
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:31: warning: argument 'int' of command @param is not found in the argument list of Graphics::IKeyboardHandler::VOnKeyUp(const unsigned int iCharID)
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:31: warning: The following parameters of Graphics::IKeyboardHandler::VOnKeyUp(const unsigned int iCharID) are not documented:
+  parameter 'iCharID'
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/KeyboardHandler.hxx:31: warning: return type of member Graphics::IKeyboardHandler::VOnKeyUp is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Model.hxx:83: warning: return type of member Graphics::IModel::VOnInitialization is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/MouseHandler.hxx:32: warning: return type of member Graphics::IMouseHandler::VOnLeftMouseButtonDown is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/MouseHandler.hxx:25: warning: return type of member Graphics::IMouseHandler::VOnLeftMouseButtonUp is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/MouseHandler.hxx:39: warning: return type of member Graphics::IMouseHandler::VOnMouseMove is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Sentence.hxx:86: warning: argument 'The' of command @param is not found in the argument list of Graphics::ISentence::VGetText(Base::cString &strText) const
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Sentence.hxx:86: warning: The following parameters of Graphics::ISentence::VGetText(Base::cString &strText) const are not documented:
+  parameter 'strText'
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Sentence.hxx:37: warning: return type of member Graphics::ISentence::VInitialize is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Sprite.hxx:36: warning: return type of member Graphics::ISprite::VInitialize is not documented
+C:/Users/SpeedRun/Projects/sppong/Source/GraphicsEngine/Includes/Sprite.hxx:43: warning: return type of member Graphics::ISprite::VInitialize is not documented

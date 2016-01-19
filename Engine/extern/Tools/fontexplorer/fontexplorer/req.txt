@@ -1,0 +1,187 @@
+001     Allow track kerning value to be negative
+
+002     Handled Init3dControls so it is still compatible with VS6
+
+003     (was redundant with another REQ and was merged)
+
+004     Do not disable pair kerning for ExtTextOut or None
+
+005     Made Kerning Explorer an MDI page
+
+006     Changes required for VS2003 and 64-bit growth
+
+007     Added #pragma once to various header files
+
+008     Removed gratuitous #includes of fontexplorer.h (this was one of the earliest MFC programs I wrote)
+
+009     Reorganization of some #includes (various reasons); updates to stdafx.h
+
+010     Make the display options a protected data member
+
+011     Better layout handling; support ExtTextOut for pair-kerning
+
+012     Handle resizing of CFormView
+
+013     Made static variables static class members
+
+014     Fixed layout bug in text display
+
+015     Added more font information to right-click on display
+
+016     Changed GetTextExtent calls that want one character
+
+017     Support pair kerning by using a second color to display adjancent
+        characters that have a pair-kerning relationship
+
+018     Use transform matrix instead of SetWindowExt/SetViewPortExt to eliminate
+        scaling errors (not longer runs on MS-DOS, tough)
+
+019     Some font-logic debug tracing added
+
+020     Use dialog font for popup display
+
+021     Trace font deletion
+
+022     Allow vertical offset of text
+
+023     Fixed problem with losing dialog font
+
+024     Added ErrorString module
+
+025     Use two different colors for character ABC colors
+
+026     Retain settings for fonts in kerning explorer
+
+027     Use bitmap button for copy
+
+028     Better ListBox height computation for "font info box"
+
+029     Add button to copy only images
+
+030     Clipboard operations default FullWnd parameter to FALSE
+
+031     Added feature to ignore ABC widths (no pseudo-kerning)
+
+032     Support GDI debugging
+
+033     DC trace output function added
+
+034     Removed MS-DOS support code
+
+035     Support GM_ADVANCED mode for font explorer
+
+036     Allow font control to be resized
+
+037     Code cleanup to modern standards
+
+038     Added hover-over capability over ABC width designators in FontDisp
+
+039     Use three-tiered ABC display system to avoid overlaps of Y.T where . is so small that Y and T overlap ABCs
+
+040     Handle OnCancelMode with popup properly
+
+041     Added kerning map
+
+042     Modified to Unicode support
+
+043     Upgrade to VS2005
+
+044     Remove unused cases
+
+045     LOGFONT shows code and is resizable
+
+046     Change default logic in IDCOMBO
+
+047     Change from generic CPtrArray (ca. 1997) to CArray<CFontObj>
+
+048     Added Registry support
+
+049     Handle font failure in a dialog
+
+050     Sample box is resizeable
+
+051     Raster callback method is static class member
+
+052     Handle magnification of display properly
+
+053     Make LogFontExplorer be a view
+
+054     Rasterization Explorer now a view
+
+055     Make stock font explorer be a view
+
+056     Free up templates
+
+057     Track font changes in realtime (delete Create button)
+
+058     Sample text for LogFontExplorer can be changed
+
+059     LogFontExplorer: Show origin grid for font sample
+
+060     LogFontExplorer: Support horizontal and vertical alignment options
+
+061     Set captions for explorers
+
+062     ResizeParentToFit
+
+063     Added flyover coordinates to grid display
+
+064     Added stock DEFAULT_GUI_FONT
+
+065     Indicate kerning map is empty
+
+066     Use bitmap layout technique for font display
+
+067     For options sample boxes, limit font size to size of control
+
+068     Keep font dialog from closing on enter
+
+069
+
+070     Moved "Options" onto main Font Explorer page
+
+071     Handle font smoothing vs. no antialiasing
+
+072     Handle track kerning properly in display
+
+073     Enable pair kerning only for fonts with kerning tables
+
+074     CIDCombo::AddStrings now const
+
+075     CIDCombo: make dropdown message transparent to parent
+
+076     Implement "presents" in kerning explorer
+
+077     Use different drawing and target DCs for DrawABCs
+
+078     Added ChooseFont/CFontDialog explorer
+
+079     Added CIDCombo::Select
+
+080     Renamed Fontdisp.* to FontDisplay.*
+
+081     Changed name from display_options::TEXTOUTEX to EXTTEXTOUT
+ 
+082     Update font information in CFontExplorer::OnInitDialog
+
+083     Added copy button to code in CLogFontExplorer
+
+084     Renamed StockFnt.* to be StockFont.*
+
+085     Show stock font face name
+
+086     Change Stock Font copy button to use image button
+
+087     Explicitly delete font explorer template
+
+088     Removed FontSel dialog and support code
+
+089     GetCharacterPlacement Explorer added
+
+090     Added lock button for escapement/orientation
+
+091     Added SetPos32 method to CRotation class
+
+092     Wiggle window to keep GCPResults from disappearing
+
+093     Clean up GetCharacterPlacement status display

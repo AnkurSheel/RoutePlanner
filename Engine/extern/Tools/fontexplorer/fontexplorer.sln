@@ -1,0 +1,31 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fontexplorer", "fontexplorer\fontexplorer.vcproj", "{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{CD2881D0-6C98-4A0C-A064-8966A79637BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+		Unicode Debug|Win32 = Unicode Debug|Win32
+		Unicode Release|Win32 = Unicode Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Debug|Win32.Build.0 = Debug|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Release|Win32.ActiveCfg = Release|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Release|Win32.Build.0 = Release|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Unicode Debug|Win32.ActiveCfg = Unicode Debug|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Unicode Debug|Win32.Build.0 = Unicode Debug|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Unicode Release|Win32.ActiveCfg = Unicode Release|Win32
+		{CDEA0E08-1DF5-40BF-9B92-7E90DF8BBEF9}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
+		{CD2881D0-6C98-4A0C-A064-8966A79637BA}.Debug|Win32.ActiveCfg = Debug
+		{CD2881D0-6C98-4A0C-A064-8966A79637BA}.Release|Win32.ActiveCfg = Release
+		{CD2881D0-6C98-4A0C-A064-8966A79637BA}.Unicode Debug|Win32.ActiveCfg = Debug
+		{CD2881D0-6C98-4A0C-A064-8966A79637BA}.Unicode Release|Win32.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

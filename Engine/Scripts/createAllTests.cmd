@@ -1,0 +1,9 @@
+call createBaseTest
+call createUtilitiesTest
+call createAiTest
+call createGraphicsTest
+call createPhysicsTest
+call createSoundTest
+call CreateGamebaseTest
+
+@pause
