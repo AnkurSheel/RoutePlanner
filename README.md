@@ -13,4 +13,5 @@ Atrribution
 Based on the article by Randy Olson at http://www.randalolson.com/2015/03/08/computing-the-optimal-road-trip-across-the-u-s/ for the python script to create the csv file and visualization.
 
 http://www.randalolson.com
+
 Licencse: https://creativecommons.org/licenses/by/4.0/
