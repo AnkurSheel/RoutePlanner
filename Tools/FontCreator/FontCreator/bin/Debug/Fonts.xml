@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Fonts>
+  <Font Language="Default" ConfigFileName="font_default.bmfc" Name="Comic Sans MS" Size="40" Bold="False" Outline="1" TextureWidth="512" />
+  <Font Language="European" ConfigFileName="font_eu.bmfc" Name="Arial" Size="32" Bold="False" Outline="1" TextureWidth="512" />
+  <Font Language="Japanese" ConfigFileName="font_jp.bmfc" Name="MS PGothic" Size="24" Bold="False" Outline="1" TextureWidth="512" />
+</Fonts>
