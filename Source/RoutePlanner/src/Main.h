@@ -18,6 +18,7 @@ struct WaypointData
 
 	Base::cHashedString m_WaypointName;
 	DistanceTimeMap m_DistanceTimeMap;
+  std::vector<unsigned long> m_ClosestCities;
 };
 
 typedef std::map<unsigned long, WaypointData> WaypointDataMap;

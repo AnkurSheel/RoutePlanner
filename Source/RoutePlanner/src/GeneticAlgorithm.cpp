@@ -19,24 +19,20 @@ stGenome::stGenome()
 }
 
 //	*******************************************************************************************************************
-cGeneticAlgorithm::cGeneticAlgorithm(int generations/*=5000*/, int populationSize/*=100*/, float crossOverRate/*=0.5f*/
-	, float mutationRate/*=0.02f*/, unsigned int seed/* = 0*/)
-	: m_NumberOfGenerations(generations)
-	, m_PopulationSize(populationSize)
+cGeneticAlgorithm::cGeneticAlgorithm(const stGAProperties& properties)
+	: m_Properties(properties)
 	, m_TotalFitnessOfPopulation(0.0f)
 	, m_pRandomGenerator(IRandomGenerator::CreateRandomGenerator())
-	, m_CrossOverRate(crossOverRate)
-	, m_MutationRate(mutationRate)
 {
-	if (seed == 0)
+	if (properties.m_Seed == 0)
 	{
 		m_pRandomGenerator->VRandomize();
 	}
 	else 
 	{
-		m_pRandomGenerator->VSetRandomSeed(seed);
+		m_pRandomGenerator->VSetRandomSeed(properties.m_Seed);
 	}
-	m_Population.reserve(m_PopulationSize);
+	m_Population.reserve(properties.m_PopulationSize);
 }
 
 //	*******************************************************************************************************************
@@ -46,25 +42,23 @@ cGeneticAlgorithm::~cGeneticAlgorithm()
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList)
+void cGeneticAlgorithm::RunGeneticAlgorithmType1()
 {
 	m_Population.clear();
 	CreateRandomPopulation();
 
 	GenomeList newPopulation;
-	newPopulation.reserve(m_PopulationSize);
+	newPopulation.reserve(m_Properties.m_PopulationSize);
 	stGenome father;
 
-	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
-	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
+	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_Properties.m_PopulationSize)));
+	for (int generation = 1; generation < m_Properties.m_NumberOfGenerations; generation++)
 	{
-		cout << "Type1 Generation " << generation;
 		m_TotalFitnessOfPopulation = 0.0f;
-		CalculateFitness(dataList);
 		
 		std::sort(m_Population.begin(), m_Population.end());
 		newPopulation.clear();
-		if (generation % 100 == 0 || generation==1)
+		if (generation % 1000 == 0 || generation==1)
 		{
 			PrintCurrentPopulation(generation);
 			GenerateHtml("RouteType1");
@@ -75,7 +69,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList
 		}
 		int populationIndex = 0;
 
-		for (int i = parentsToUse; i < m_PopulationSize; i++)
+		for (int i = parentsToUse; i < m_Properties.m_PopulationSize; i++)
 		{
 			father = m_Population[populationIndex++];
 
@@ -89,12 +83,12 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType1(const WaypointDataMap& dataList
 		}
 		m_Population.swap(newPopulation);
 	}
-	PrintCurrentPopulation(m_NumberOfGenerations);
+	PrintCurrentPopulation(m_Properties.m_NumberOfGenerations);
 	GenerateHtml("RouteType1");
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList)
+void cGeneticAlgorithm::RunGeneticAlgorithmType2()
 {
 	m_Population.clear();
 	CreateRandomPopulation();
@@ -102,21 +96,18 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList
 	stGenome father;
 	stGenome mother;
 
-	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
-	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
+	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_Properties.m_PopulationSize)));
+	for (int generation = 1; generation < m_Properties.m_NumberOfGenerations; generation++)
 	{
-		cout << "Type2 Generation " << generation;
 		m_TotalFitnessOfPopulation = 0.0f;
-		CalculateFitness(dataList);
-
 		std::sort(m_Population.begin(), m_Population.end());
-		if (generation % 100 == 0 || generation==1)
+		if (generation % 1000 == 0 || generation==1)
 		{
 			PrintCurrentPopulation(generation);
 			GenerateHtml("RouteType2");
 		}
 		int populationIndex = 0;
-		for (int i = parentsToUse + 1; i < m_PopulationSize; i++)
+		for (int i = parentsToUse + 1; i < m_Properties.m_PopulationSize; i++)
 		{
 			father = m_Population[populationIndex++];
 
@@ -126,16 +117,15 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType2(const WaypointDataMap& dataList
 			}
 			ShuffleMutation(father);
 			Mutate(father);
-			SetGenomeHash(father);
 			ReplaceGenome(i, father);
 		}
 	}
-	PrintCurrentPopulation(m_NumberOfGenerations);
+	PrintCurrentPopulation(m_Properties.m_NumberOfGenerations);
 	GenerateHtml("RouteType2");
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList)
+void cGeneticAlgorithm::RunGeneticAlgorithmType3()
 {
 	m_Population.clear();
 	CreateRandomPopulation();
@@ -144,16 +134,14 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList
 	stGenome father;
 	stGenome mother;
 
-	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
-	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
+	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_Properties.m_PopulationSize)));
+	for (int generation = 1; generation < m_Properties.m_NumberOfGenerations; generation++)
 	{
-		cout << "Type3 Generation " << generation;
 		m_TotalFitnessOfPopulation = 0.0f;
-		CalculateFitness(dataList);
 
 		std::sort(m_Population.begin(), m_Population.end());
 		newPopulation.clear();
-		if (generation % 100 == 0 || generation==1)
+		if (generation % 1000 == 0 || generation==1)
 		{
 			PrintCurrentPopulation(generation);
 			GenerateHtml("RouteType3");
@@ -164,41 +152,69 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType3(const WaypointDataMap& dataList
 		{
 			AddGenome(newPopulation, m_Population[i]);
 		}
-		for (int i = parentsToUse; i < m_PopulationSize; i++)
+		for (int i = parentsToUse; i < m_Properties.m_PopulationSize; i++)
 		{
 			father = SelectFromPopulation(m_Population.size());
 			ShuffleMutation(father);
 			Mutate(father);
-			SetGenomeHash(father);
 			AddGenome(newPopulation, father);
 		}
 		m_Population.clear();
 		m_Population.insert(m_Population.end(), newPopulation.begin(), newPopulation.end());
 	}
-	PrintCurrentPopulation(m_NumberOfGenerations);
+	PrintCurrentPopulation(m_Properties.m_NumberOfGenerations);
 	GenerateHtml("RouteType3");
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList)
+void cGeneticAlgorithm::RunGeneticAlgorithmType4()
+{
+	m_Population.clear();
+	CreateRandomPopulation();
+
+	stGenome father;
+
+	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_Properties.m_PopulationSize)));
+	for (int generation = 1; generation < m_Properties.m_NumberOfGenerations; generation++)
+	{
+		m_TotalFitnessOfPopulation = 0.0f;
+
+		std::sort(m_Population.begin(), m_Population.end());
+		if (generation % 1000 == 0 || generation==1)
+		{
+			PrintCurrentPopulation(generation);
+			GenerateHtml("RouteType4");
+		}
+		for (int i = parentsToUse; i < m_Properties.m_PopulationSize; i++)
+		{
+			father = SelectFromPopulation(parentsToUse);
+			ShuffleMutation(father);
+			Mutate(father);
+			ReplaceGenome(i, father);
+		}
+	}
+	PrintCurrentPopulation(m_Properties.m_NumberOfGenerations);
+	GenerateHtml("RouteType4");
+}
+
+//	*******************************************************************************************************************
+void cGeneticAlgorithm::RunGeneticAlgorithmType5()
 {
 	CreateRandomPopulation();
 
 	GenomeList newPopulation;
-	newPopulation.reserve(m_PopulationSize);
+	newPopulation.reserve(m_Properties.m_PopulationSize);
 	stGenome father;
 	stGenome mother;
 
-	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_PopulationSize)));
-	for (int generation = 1; generation < m_NumberOfGenerations; generation++)
+	int parentsToUse = static_cast<int>(sqrt(static_cast<float>(m_Properties.m_PopulationSize)));
+	for (int generation = 1; generation < m_Properties.m_NumberOfGenerations; generation++)
 	{
-		//cout << "Type1 Generation " << generation;
 		m_TotalFitnessOfPopulation = 0.0f;
-		CalculateFitness(dataList);
 
 		std::sort(m_Population.begin(), m_Population.end());
 		newPopulation.clear();
-		if (generation % 100 == 0 || generation==1)
+		if (generation % 1000 == 0 || generation==1)
 		{
 			PrintCurrentPopulation(generation);
 			GenerateHtml("RoueType1");
@@ -208,7 +224,7 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList
 			AddGenome(newPopulation, m_Population[i]);
 		}
 		int populationIndex = 0;
-		while (newPopulation.size() < m_PopulationSize)
+		while (newPopulation.size() < m_Properties.m_PopulationSize)
 		{
 			father = m_Population[populationIndex++];
 			//father = SelectFromPopulation();
@@ -236,13 +252,14 @@ void cGeneticAlgorithm::RunGeneticAlgorithmType4(const WaypointDataMap& dataList
 		}
 		m_Population.swap(newPopulation);
 	}
-	PrintCurrentPopulation(m_NumberOfGenerations);
+	PrintCurrentPopulation(m_Properties.m_NumberOfGenerations);
 	GenerateHtml("RouteType4");
 }
 
 //  *******************************************************************************************************************
-void cGeneticAlgorithm::SetWayPointNames(const vector<Base::cHashedString>& waypointNames)
+void cGeneticAlgorithm::SetData(const WaypointDataMap& dataList, const vector<Base::cHashedString>& waypointNames)
 {
+	m_DataList = dataList;
 	for (int i = 0; i < waypointNames.size(); i++ )
 	{
 		m_WaypointNames[waypointNames[i].GetHash()] = waypointNames[i];
@@ -253,13 +270,13 @@ void cGeneticAlgorithm::SetWayPointNames(const vector<Base::cHashedString>& wayp
 void cGeneticAlgorithm::CreateRandomPopulation()
 {
 	GenomeDataList shuffledList;
-	std::srand(m_Seed);
+	std::srand(m_Properties.m_Seed);
 	for (auto iter = m_WaypointNames.begin(); iter != m_WaypointNames.end(); iter++)
 	{
 		shuffledList.push_back(iter->first);
 	}
 	stGenome genome;
-	while(m_Population.size() < m_PopulationSize)
+	while(m_Population.size() < m_Properties.m_PopulationSize)
 	{
 		std::random_shuffle(shuffledList.begin(), shuffledList.end());
 		genome.m_Data = shuffledList;
@@ -268,29 +285,25 @@ void cGeneticAlgorithm::CreateRandomPopulation()
 }
 
 //	*******************************************************************************************************************
-void cGeneticAlgorithm::CalculateFitness(const WaypointDataMap& dataList)
+void cGeneticAlgorithm::CalculateFitness(stGenome& genome)
 {
-	for(auto iterPopulation = m_Population.begin(); iterPopulation != m_Population.end(); iterPopulation++)
+	genome.m_Fitness = 0.0f;
+	auto iter = genome.m_Data.begin();
+	DataType waypoint1 = (*iter);
+	DataType waypoint2;
+	iter++;
+	for (;iter != genome.m_Data.end(); iter++)
 	{
-		stGenome& genome = (*iterPopulation);
-		genome.m_Fitness = 0.0f;
-		auto iter = genome.m_Data.begin();
-		DataType waypoint1 = (*iter);
-		DataType waypoint2;
-		iter++;
-		for (;iter != genome.m_Data.end(); iter++)
-		{
-			waypoint2 = (*iter);
-			unsigned long distance = dataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
-			genome.m_Fitness += distance;
-			waypoint1 = waypoint2;
-		}
-		waypoint2 = genome.m_Data[0];
-		unsigned long distance = dataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
+		waypoint2 = (*iter);
+		unsigned long distance = m_DataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
 		genome.m_Fitness += distance;
-
-		m_TotalFitnessOfPopulation += genome.m_Fitness;
+		waypoint1 = waypoint2;
 	}
+	waypoint2 = genome.m_Data[0];
+	unsigned long distance = m_DataList.at(waypoint1).m_DistanceTimeMap.at(waypoint2).m_Distance;
+	genome.m_Fitness += distance;
+
+	m_TotalFitnessOfPopulation += genome.m_Fitness;
 }
 
 //	*******************************************************************************************************************
@@ -315,7 +328,7 @@ void cGeneticAlgorithm::CrossOver(stGenome& father, stGenome& mother)
 	int randomPosition;
 	stGenome daughter;
 	stGenome son;
-	if(m_pRandomGenerator->VRandom() < m_CrossOverRate)
+	if(m_pRandomGenerator->VRandom() < m_Properties.m_CrossOverRate)
 	{
 		randomPosition = m_pRandomGenerator->VRandom(father.m_Data.size());
 		for (int i = 0; i < randomPosition; i++)
@@ -380,7 +393,7 @@ void cGeneticAlgorithm::ShuffleMutation(stGenome& genome)
 //	*******************************************************************************************************************
 void cGeneticAlgorithm::Mutate(stGenome& genome, int maxMutations /*= 3*/)
 {
-	if (m_pRandomGenerator->VRandom() < m_MutationRate)
+	if (m_pRandomGenerator->VRandom() < m_Properties.m_MutationRate)
 	{
 		int swap_index1;
 		int swap_index2;
@@ -406,11 +419,12 @@ void cGeneticAlgorithm::PrintCurrentPopulation(int currentGeneration)
 		message += m_Population[0].m_Data[i] + ", ";
 	}*/
 	//cout << "\n\n" << message << "\n\n";
+	cout << message.GetData();
 	::OutputDebugString(message.GetData());
 }
 
 //	*******************************************************************************************************************
-bool cGeneticAlgorithm::ValidateGenome(const GenomeList& population, const stGenome& genome, int size)
+bool cGeneticAlgorithm::ValidateGenome(GenomeList& population, stGenome& genome, int size)
 {
 	//auto iter = genome.m_Data.begin();
 	//DataType waypoint1 = (*iter);
@@ -425,12 +439,22 @@ bool cGeneticAlgorithm::ValidateGenome(const GenomeList& population, const stGen
 	//	}
 	//	waypoint1 = waypoint2;
 	//}
-
 	for (int i = 0; i < size; i++)
 	{
-		if (genome.hash == population[i].hash)
+		if (isEqual(genome.m_Fitness, population[i].m_Fitness))
 		{
-			return false;
+			if (genome.hash == 0)
+			{
+				SetGenomeHash(genome);
+			}
+			if (population[i].hash == 0)
+			{
+				SetGenomeHash(population[i]);
+			}
+			if (genome.hash == population[i].hash)
+			{
+				return false;
+			}
 		}
 	}
 	return true;
@@ -518,7 +542,7 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 		pFile->VWriteLine("\t\t\t\t\t\twaypts.push({\n");
 		pFile->VWriteLine("\t\t\t\t\t\tlocation:routes[i],\n");
 		pFile->VWriteLine("\t\t\t\t\t\tstopover:true});\n");
-		pFile->VWriteLine("\t\t\t\t\}\n");
+		pFile->VWriteLine("\t\t\t\t}\n");
 		pFile->VWriteLine("\n");
 		pFile->VWriteLine("\t\t\t\tvar request = \"\";\n");
 		pFile->VWriteLine("\t\t\t\tif (waypts.length > 0) {\n");
@@ -596,11 +620,22 @@ void cGeneticAlgorithm::GenerateHtml(const cString& fileNamePrefix)
 //	*******************************************************************************************************************
 void cGeneticAlgorithm::AddGenome(GenomeList& population, stGenome& genome)
 {
-	SetGenomeHash(genome);
-
+	genome.hash = 0;
+	CalculateFitness(genome);
 	if(ValidateGenome(population, genome, population.size()))
 	{
 		population.push_back(genome);
+	}
+}
+
+//	*******************************************************************************************************************
+void cGeneticAlgorithm::ReplaceGenome(int index, stGenome& genome)
+{
+	genome.hash = 0;
+	CalculateFitness(genome);
+	if(ValidateGenome(m_Population, genome, index))
+	{
+		m_Population[index] = genome;
 	}
 }
 
@@ -613,13 +648,4 @@ void cGeneticAlgorithm::SetGenomeHash(stGenome &genome)
 		str += cStringUtilities::MakeFormatted("%d", genome.m_Data[i]);
 	}
 	genome.hash = cHashedString::CalculateChecksum(str);
-}
-
-//	*******************************************************************************************************************
-void cGeneticAlgorithm::ReplaceGenome(int index, const stGenome& genome)
-{
-	if(ValidateGenome(m_Population, genome, index))
-	{
-		m_Population[index] = genome;
-	}
 }

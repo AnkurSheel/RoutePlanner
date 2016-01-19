@@ -34,7 +34,7 @@ using namespace std;
 
 void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cHashedString>& waypointNames);
 void AddtoWaypointMapData(WaypointDataMap &waypoints, const cHashedString &fromWaypoint, const cHashedString &toWaypoint, const unsigned long distance, const unsigned long duration);
-
+void FindClosestCities(WaypointDataMap& waypoints, const int numberOfCloseCities);
 
 //  *******************************************************************************************************************
 int main()
@@ -42,43 +42,58 @@ int main()
 	WaypointDataMap waypoints;
 	std::vector<cHashedString> waypointNames;
 	ITimer * pTimer = ITimer::CreateTimer();
-	pTimer->VStartTimer();
-
 	int hour, min, sec;
 
-	ReadWaypointData(waypoints, waypointNames);
-	pTimer->VStopTimer();
+  pTimer->VStartTimer();
+
+  ReadWaypointData(waypoints, waypointNames);
+  FindClosestCities(waypoints, 5);
+
+  pTimer->VStopTimer();
 	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
 	::OutputDebugString(cStringUtilities::MakeFormatted("Time to read in data: %02d:%02d:%02d\n", hour, min, sec).GetData());
-	cGeneticAlgorithm algo(5000, 100, 0.90f, 0.20f, 10000);
-	algo.SetWayPointNames(waypointNames);
+
+  stGAProperties properties;
+  properties.m_CrossOverRate = 0.9f;
+  properties.m_MutationRate = 0.2f;
+  properties.m_Seed = 10000;
+  properties.m_PopulationSize = 500;
+  properties.m_NumberOfGenerations = 50000;
+	cGeneticAlgorithm algo(properties);
+	algo.SetData(waypoints, waypointNames);
+
+	//pTimer->VReset();
+	//pTimer->VStartTimer();
+	//algo.RunGeneticAlgorithmType1();
+	//pTimer->VStopTimer();
+	//Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
+	//::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType1: %02d:%02d:%02d\n", hour, min, sec).GetData());
+
+	//pTimer->VReset();
+	//pTimer->VStartTimer();
+	//algo.RunGeneticAlgorithmType2();
+	//pTimer->VStopTimer();
+	//Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
+	//::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType2: %02d:%02d:%02d\n", hour, min, sec).GetData());
+
+	//pTimer->VReset();
+	//pTimer->VStartTimer();
+	//algo.RunGeneticAlgorithmType3();
+	//pTimer->VStopTimer();
+	//Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
+	//::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType3: %02d:%02d:%02d\n", hour, min, sec).GetData());
 
 	pTimer->VReset();
 	pTimer->VStartTimer();
-	algo.RunGeneticAlgorithmType1(waypoints);
+	algo.RunGeneticAlgorithmType4();
 	pTimer->VStopTimer();
 	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
-	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType1: %02d:%02d:%02d\n", hour, min, sec).GetData());
-
-	pTimer->VReset();
-	pTimer->VStartTimer();
-	algo.RunGeneticAlgorithmType2(waypoints);
-	pTimer->VStopTimer();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
-	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType2: %02d:%02d:%02d\n", hour, min, sec).GetData());
-
-	pTimer->VReset();
-	pTimer->VStartTimer();
-	algo.RunGeneticAlgorithmType3(waypoints);
-	pTimer->VStopTimer();
-	Base::GetTimeAsHHMMSS(pTimer->VGetRunningTime(), hour, min, sec);
-	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType3: %02d:%02d:%02d\n", hour, min, sec).GetData());
+	::OutputDebugString(cStringUtilities::MakeFormatted("Time to RunGeneticAlgorithmType4: %02d:%02d:%02d\n", hour, min, sec).GetData());
 
 	//_CrtDumpMemoryLeaks()
 
 	SafeDelete(&pTimer);
 	cServiceLocator::Destroy();
-	getch();
 	return 0;
 }
 
@@ -107,10 +122,6 @@ void AddtoWaypointMapData(WaypointDataMap &waypoints, const cHashedString &fromW
 		dtData.m_Distance = distance;
 		dtData.m_Duration = duration;
 		data1.m_DistanceTimeMap.insert(std::pair<unsigned long, WaypointData::DistanceTimeData>(dtData.m_ToWaypoint.GetHash(), dtData));
-	}
-	else
-	{
-		int a = 5;
 	}
 	waypoints[data1.m_WaypointName.GetHash()] = data1;
 }
@@ -151,4 +162,42 @@ void ReadWaypointData(WaypointDataMap &waypoints, std::vector<cHashedString>& wa
 		m_pFile->VCloseFile();
 		SafeDelete(&m_pFile);
 	}
+}
+
+//  *******************************************************************************************************************
+void FindClosestCities(WaypointDataMap& waypoints, const int numberOfCloseCities)
+{
+ for (auto waypointIter = waypoints.begin(); waypointIter  != waypoints.end(); waypointIter ++)
+ {
+   WaypointData& data = (waypointIter ->second);
+   
+   unsigned long shortestDistance;
+   unsigned long shortestCity;
+
+   for (int i = 0; i < 5; i++)
+   {
+     shortestDistance = GetMaxValue<unsigned long>();
+     for (auto distanceTimeIter = data.m_DistanceTimeMap.begin(); distanceTimeIter != data.m_DistanceTimeMap.end(); distanceTimeIter++)
+     {
+       if (distanceTimeIter->second.m_Distance < shortestDistance)
+       {
+         bool found = false;
+         for (int i = 0; i< data.m_ClosestCities.size(); i++)
+         {
+            if (distanceTimeIter->first == data.m_ClosestCities[i])
+            {
+              found = true;
+              break;
+            }
+         }
+         if(!found)
+         {
+           shortestDistance = distanceTimeIter->second.m_Distance;
+           shortestCity = distanceTimeIter->first;
+         }
+       }
+     }
+     data.m_ClosestCities.push_back(shortestCity);
+   }
+ }
 }
