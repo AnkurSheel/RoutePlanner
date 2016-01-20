@@ -6,7 +6,7 @@ Replace the waypoint list in the python script
 Enable the Google Maps Distance Matrix API on your Google account. Google explains how to do that at https://github.com/googlemaps/google-maps-services-python#api-keys.
 Replace the key in the python file and run the python script.
 
-Copy over the .csv file that is generated and run the RoutePlanner Project.
+Run the RoutePlanner Project.
 It will generate html pages of the routes in the Routes Folder.
 
 Atrribution
