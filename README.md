@@ -9,6 +9,8 @@ Replace the key in the python file and run the python script.
 Run the RoutePlanner Project.
 It will generate html pages of the routes in the Routes Folder.
 
+For screenshots and interactive maps visit :  http://ankursheel.com/cv/ai-projects/route-planner-tr…salesman-problem
+
 Atrribution
 Based on the article by Randy Olson at http://www.randalolson.com/2015/03/08/computing-the-optimal-road-trip-across-the-u-s/ for the python script to create the csv file and visualization.
 
